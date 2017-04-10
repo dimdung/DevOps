@@ -1,0 +1,4 @@
+echo ‘APP=station’ >> /etc/environment
+echo ‘ECS_CLUSTER=cluster-station’ >> /data/app/station.config
+source /etc/environment
+/bin/systemctl start ecs-init
