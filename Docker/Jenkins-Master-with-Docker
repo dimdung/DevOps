@@ -1,0 +1,11 @@
+#Setting Up a Jenkins Master with Docker on CentOS 7
+#!/bin/bash
+
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum clean all
+yum install -y docker-ce-17.03.0.ce-1.el7.centos
+systemctl start docker
+docker pull jenkins:2.19.4
+mkdir /var/jenkins_home
+docker run -d -u root -p 8080:8080 -p 50000:50000 -v /var/jenkins_home:/var/jenkins_home jenkins:2.19.4
+
