@@ -1,0 +1,16 @@
+aws autoscaling create-launch-configuration --launch-configuration-name LC-ECS-Station-v0.0-DEV \
+--key-name key-pair-name --image-id ami-2edf68878 --security-groups sg-59f16b24 \
+--instance-type m4.large --user-data file://myuserdata.txt \
+--instance-monitoring Enabled=true  --no-associate-public-ip-address --placement-tenancy dedicated \
+--iam-instance-profile ecsInstanceRole --profile dev --region us-east-1
+
+
+aws autoscaling describe-launch-configurations --launch-configuration-names LC-ECS-Station-v0.0-DEV --profile dev --region us-east-1
+  
+ 
+myuserdata.txt
+#!/bin/bash
+echo ‘APP=station’ >> /etc/environment
+echo ‘ECS_CLUSTER=cluster-station’ >> /data/app/station.config
+source /etc/environment
+/bin/systemctl start ecs-init
