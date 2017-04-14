@@ -1,0 +1,67 @@
+# Generate list of username 
+aws iam list-users --query Users[*].UserName
+
+# List group membership for user 
+aws iam list-groups-for-user --user-name samal.dimdung
+
+# Generate list of Groups
+aws iam list-groups --query Groups[*].GroupName --output text
+
+# Get group members 
+ aws iam get-group --group-name Administrators
+
+# Generate list of Roles 
+aws iam list-roles --query Roles[*].RoleName --output table|text
+
+# List inline and managed policies attached to role 
+aws iam list-role-policies --role-name <rolename>
+
+aws iam list-attached-role-policies --role-name <rolename>
+
+# Generate list of customer managed polciies 
+aws iam list-policies --scope Local --query Policies[*].Arn | --output table | text 
+
+# List entities using a managed policy 
+aws iam list-entities-for-policy --policy-arn <policyarn>
+aws iam list-entities-for-policy --policy-arn arn:aws:iam::999999999999:policy/BCBSNC-DenyTerminateInstance
+
+# Complex and Summary Examples 
+# Combined example 
+[dimdung@localhost ~]$ cat iam
+# Loop throught a dynamically generated list of usernames 
+for i in `aws iam list-users --query Users[*].UserName`
+do
+# Print the usernam e
+    echo "username $i"
+    aws iam list-user-policies --user-name $i
+    # Print inline policies attache to each user (which is against best practices - use group polcies instead)
+done
+[dimdung@localhost ~]$
+
+# Summary commands
+# List all IAM objects and relationships to each other 
+aws iam get-account-authorization-details --output table|text|jason
+
+# Return numeric count of each object
+aws iam get-account-summary
+
+# Describe the IAM passwrod policy for console credetails 
+aws iam get-account-password-policy
+
+
+
+
+# 
+[dimdung@localhost ~]$ aws iam list-groups-for-user --user-name samal.dimdung
+{
+    "Groups": [
+        {
+            "Path": "/",
+            "CreateDate": "2016-04-06T13:40:26Z",
+            "GroupId": "AGPAJPCAN7ULNCVBF2FZC",
+            "Arn": "arn:aws:iam::999999999999:group/Administrators",
+            "GroupName": "Administrators"
+        }
+    ]
+}
+[dimdung@localhost ~]$
