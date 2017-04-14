@@ -51,9 +51,6 @@ aws iam get-account-password-policy
 
 
 
-# Describe the IAM passwrod policy for console credetails 
-
-
 # 
 [dimdung@localhost ~]$ aws iam list-groups-for-user --user-name samal.dimdung
 {
