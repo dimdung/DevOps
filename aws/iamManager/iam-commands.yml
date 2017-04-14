@@ -4,6 +4,12 @@ aws iam list-users --query Users[*].UserName
 # List group membership for user 
 aws iam list-groups-for-user --user-name samal.dimdung
 
+# Generate list of Groups
+aws iam list-groups --query Groups[*].GroupName --output text
+
+# Get group members 
+ aws iam get-group --group-name Administrators
+
 [dimdung@localhost ~]$ aws iam list-groups-for-user --user-name samal.dimdung
 {
     "Groups": [
