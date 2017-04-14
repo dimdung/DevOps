@@ -1,0 +1,4 @@
+# Describe the VPC
+aws ec2 describe-vpcs
+aws ec2 describe-vpcs --output table
+
