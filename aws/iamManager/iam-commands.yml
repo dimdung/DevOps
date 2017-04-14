@@ -1,0 +1,16 @@
+aws iam list-users --query Users[*].UserName
+aws iam list-groups-for-user --user-name samal.dimdung
+
+[dimdung@localhost ~]$ aws iam list-groups-for-user --user-name samal.dimdung
+{
+    "Groups": [
+        {
+            "Path": "/",
+            "CreateDate": "2016-04-06T13:40:26Z",
+            "GroupId": "AGPAJPCAN7ULNCVBF2FZC",
+            "Arn": "arn:aws:iam::999999999999:group/Administrators",
+            "GroupName": "Administrators"
+        }
+    ]
+}
+[dimdung@localhost ~]$
