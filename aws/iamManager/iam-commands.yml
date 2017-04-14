@@ -1,4 +1,7 @@
+# Generate list of username 
 aws iam list-users --query Users[*].UserName
+
+# List group membership for user 
 aws iam list-groups-for-user --user-name samal.dimdung
 
 [dimdung@localhost ~]$ aws iam list-groups-for-user --user-name samal.dimdung
