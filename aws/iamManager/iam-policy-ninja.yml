@@ -1,0 +1,281 @@
+# Principal - Examples 
+
+<!-- Everyone (anonymous users) -->
+"Principal": "AWS":"*.*"
+
+<!-- Specific account or accounts -->
+"Principal":{"AWS":"arn:aws:iam::123456789012:root" }
+"Principal":{"AWS":"123456789012"}
+
+<!-- Individual IAM user -->
+"Principal":"AWS":"arn:aws:iam::123456789012:user/username"
+
+<!-- Federated user (using web indetity federation) -->
+"Principal":{"Federated":"www.amazon.com"}
+"Principal":{"Federated":"graph.facebook.com"}
+"Principal":{"Federated":"accounts.google.com"}
+
+<!-- Specific role -->
+"Principal":{"AWS":"arn:aws:iam::123456789012:role/rolename"}
+
+<!-- Specific service -->
+"Principal":{"service":"ec2.amzonaws.com"}
+----------------------------------------------------------------------------------------
+# Action - Examples
+- Describes the type of access that should be allowed or denied 
+- You can find these in the docs or use the policy editor to get a drop-down list
+- Statements must include either an Action or NotAction element 
+
+<!-- EC2 action -->
+"Action":"ec2:StartInstances"
+
+<!-- IAM action -->
+"Action":"iam:ChangePassword"
+
+<!-- S3 action -->
+"Action":"s3:GetObject"
+
+<!-- Specify multiple values for the Acton elements -->
+"Action":["sqs:SendMessage","sqs:RecieveMessage"]
+
+<!-- Use wildcards (* or ?) as part of the action name. This would cover Create/Delete/List/Updates -->
+"Action":"iam:*AccessKey*"
+
+# Understanding NotAction
+- Lets you specify an exception to a list of acations 
+- Could result in shorter policies then using Action and denying many actions 
+- Examples: Let's say you want to allow everything but IAM APIs 
+
+# Option - 1 
+{
+  "Version": "2012-10-17",
+  "Statement:[{
+     "Effect": "Allow",
+	 "NotAction": "iam:*", 
+	 "Resource": "*" # This is not a Deny. A user could still have a separate policy that grants IAM:* 
+  }
+ ]
+}
+
+# Option - 2 
+# Or you do below 
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+     "Effect": "Allow",
+	 "Action": "*",
+	 "Resource": "*"
+  },
+  {
+     "Effect": "Deny",
+	 "Action": "iam:*",
+	 "Resource": "*" # If you wan to prevent the user from being able to call IAM APIs use use an explicit deny.
+   }
+  ]
+}
+
+# Question - Is there difference? 
+
+  "Statement:[{
+     "Effect": "Allow",
+	 "NotAction": "iam:*", 
+	 "Resource": "*" # This is not a Deny. A user could still have a separate policy that grants IAM:* 
+  }
+  {
+     "Effect": "Deny",
+	 "Action": "iam:*",
+	 "Resource": "*" # If you wan to prevent the user from being able to call IAM APIs use use an explicit deny.
+   }
+----------------------------------------------------------------------------------
+# Resource - Examples 
+- The object or objects that are being requested
+- Statements must include either a Resource or a NotResecource element 
+
+<!-- S3 Buckets -->
+"Resource":"arn:aws:s3:::my_corporate_bucket/*"
+
+<!-- SQS Queue -->
+"Resource":"arn:aws:sqs:us-east-2:123456789012:queue1"
+
+<!-- Multiple DynamoDB tables -->
+"Resource":["arn:aws:dynamodb:us-west-2:123456789012:table/books_table",
+		   "arn:aws:ec2:us-east-1:1234567809011:table/magazines_table""]
+
+<!-- All EC2 Instances for an account in a region -->
+"Resource":"arn:aws:ec2:us-east-1:123456789012:instance/*"
+----------------------------------------------------------------------------------
+# Conditions 
+- Optional criteria that must evaluate to true for the policy to evaluate as true
+	(ex:restrict to an IP address range)
+- Can contain multiple conditions 
+
+"Condition" : {
+  "DateGreaterThan" : {"aws:currentTime": "2015-10-08T12:00:00Z"},
+  "DateLessThan": {"aws:CurrentTime": "2015-10-08T15:00:00Z"},
+  "IpAddress": {"aws:SourceIP": ["192.0.2.0/24", "203.0.113.0/24"]}
+}
+-----------------------------------------------------------------------------------
+# Policy Variables 							${aws:userid}
+- Predefined Variables based on service request context 
+	- Existing keys (aws:SourceIP, aws:CurrentTime,etc.)
+	- Principal-specific keys (aws:username, aws:userid, aws:principaltype)
+	- Provider-specific keys (graph.facebook.com:id,www.amazon.com:user_id)
+	- SAML keys (saml:aud, saml:iss)
+	- See documentation for service-specific variables 
+- Benefits
+	- Simplifies policy management 
+	- Reduces the need for hard-coded, user-specific policies 
+	
+- Use cases we'll look at 
+	- Easily set up user access to "home folder" in S3
+	- Limit access to specific EC2 resources 
+# The anatomy of a policy with variables 
+
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+	"Effect": "Allow",
+	"Action": ["s3:ListBucket"],
+	"Resource": ["arn:aws:s3:::myBucket"],
+	"Condition": 
+			  { "StringLike": 
+					{"s3:prefix":["home/${aws:username}/*"]}	  
+		}
+	},
+	{
+	   "Effect": "Allow",
+	   "Action": ["s3:*"],
+	   "Resource": ["arn:aws:s3:::myBucket/home/${aws:username}",
+					"arn:aws:s3:::myBucket/home/${aws:username/*}"]
+	}
+  ]
+}
+
+-----------------------------------------------------------------------------------
+# Managing Your Policies
+- IAM Policies 
+	- Managed policies
+	- Inline policies 
+- Resource-based policies
+
+# IAM Policies 
+- Managed Policies (newer way)
+	- Can be attached to multiple users, groups, and roles 
+	- AWS managed policies: Created and maintained by AWS
+	- Customer managed policies: Created and maintained by you
+		- Up to 5K per policy 
+		- Up to 5 versions of a policy so you can roll back to a prior version 
+	- You can attach 10 managed policies per user, group, or role 
+	- you can limit who can attach which manage policies
+	
+- Inline policies (older way)
+	- You create and embed directly in a single user, group or role 
+	- Variables policy size (2K per user, 5K per group, and 10K per role)
+
+# Resource-based policies
+IAM Policies live with: 
+	- IAM users
+	- IAM Groups 
+	- IAM roles 
+Some services allow storing policy with resources 
+	- S3 (bucket policy)
+	- Amazon Glacier (vault policy)
+	- Amazon SN (topic policy)
+	- Amazon SQS (queue policy)
+	
+------------------------------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////////////////////
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+------------------------------------------------------------------------------------------------
+
+DEMOs
+
+# Creating a home directory using S3
+Demo:
+- Goal : create a managed policy that: 
+	- Limits access to a prefix in an S3 bucket 
+	- E.g., arn:aws:s3:::my_bucket/home/Bob/*
+	
+- We'll examine how to: 
+	- Create a managed policy that uses variables 
+	- Enable users to list buckets in the S3 console 
+	- Limits user's access to specific folders in a bucket 
+
+
+# Giving a user a home directory from the S3 console 
+{
+"Version": "2012-10-17",
+  "Statement": [
+    {"Sid": "AllowGroupToSeeBucketListInTheManagementCondole",
+	 "Action": ["s3:ListAllMyBuckets", "s3:GetBucketLocation"],
+	 "Effect": "Allow",
+	 "Resource": ["arn:aws:s3:::*"]},
+	{"Sid": "AllowRootLevelListingOfThisBucketAndHomePrefix",
+	  "Action": ["s3:ListBucket"],
+	  "Effect": "Allow",
+	  "Resource": ["arn:aws:s3:::myBucket"],
+	  "Condition":{"StringEquals":{"s3:prefix":["","home/"],"s3:delimiter":["/"]}}},
+	{"Sid": "AllowListBucketOfASpecificUserPrefix",
+	  "Action": ["s3:ListBucket"],
+	  "Effect": "Allow",
+	  "Resource": ["arn:aws:s3:::myBucket"],
+	  "Condition":{"StringLike":{"s3:prefix":["home/${aws:username}/*"]}}},
+	 {"Sid":"AllowUserFullAccesstoJustSpecificUserPrefix",
+	   "Action": ["s3:*"],
+	   "Effect": "Allow",
+	   "Resource": ["arn:aws:s3:::myBucket/home/${aws:username}",
+					"arn:aws:s3:::myBucket/home/${aws:username}/*"]}
+  ]
+}
+
+## Creating a "limited" IAM Administrator
+Demo: 
+- Goal: 
+	- Create a limited administrator who can use the IAM console to manage users, but only using certain policies
+- We'll examine group policies that ue variable to: 
+	- Grant admin full access to Amazon DynamoDB and read/write access to an S3 bucket.
+	- Grant admin access to the IAM console to be able to create users and generate access keys
+	- Limit admin to a well-defined set of managed policies 
+
+# Create a "limited" IAM administrator
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "ManageUserPermission",
+	"Effect": "Allow",
+	"Action": ["iam:ChangePassword", "iam:CreateAccessKey", "iam:CreateLoginProfile",
+			   "iam:CreateUser", "iam:DeleteAccessKey", "iam:DeleteLoginProfile",
+			   "iam:DeleteUser", "iam:UpdateAccessKey", "iam:listAttachedUserPolicies",
+			   "iam:ListPolicies"],
+    "Resource": "*"
+  },
+  {
+    "Sid": "LimitedAttachementPermissions",
+	"Effect": "Allow",
+	"Action": ["iam:AttachUserPolicy","iam:DetachUserPolicy"],
+	"Resource": "*",
+	"Condition": {
+	  "ArnEquals": {
+	    "iam:PolicyArn": [
+		  "arn:aws:iam::123456789012:policy/reInvent2015_S3_Home_Folder",
+		  "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+		]
+	  }
+	}
+  }
+ ]
+}
+## See AWS Security Blog Post https://aws.amazon.com/blogs/security/how-to-create-a-limited-iam-administrator-by-using-managed-policies/ 
+
+# Grant a user access to the IAM Console
+{
+  "Version": "2012-10-17",
+    "Sid": 
+}
+
+
+
+
+
+
+
