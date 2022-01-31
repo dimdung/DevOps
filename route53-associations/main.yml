@@ -1,0 +1,14 @@
+# Run from Source Account where hosted zone is created, the VPCID is destniation VPC ID. 
+$ aws route53 create-vpc-association-authorization --hosted-zone-id <hosted-zone-id> --vpc VPCRegion=us-east-1,VPCId=vpc-<destination-vpc-id>
+$ aws route53 create-vpc-association-authorization --hosted-zone-id Z011093926QUZVUVUT7P8 --vpc VPCRegion=us-east-1,VPCId=vpc-0684465d2e01f1b6b 
+
+$ aws route53 create-vpc-association-authorization --hosted-zone-id Z031938216A6GKQNJFWGX --vpc VPCRegion=us-east-1,VPCId=vpc-0684465d2e01f1b6b 
+ 
+ 
+
+# Run this from Destination account where …  you want to assocate VPC to Route53
+$ aws route53 associate-vpc-with-hosted-zone --hosted-zone-id <hosted-zone-id> --vpc VPCRegion=us-east-1,VPCId=vpc-<destination-vpc-id>
+$ aws route53 associate-vpc-with-hosted-zone --hosted-zone-id Z011093926QUZVUVUT7P8 --vpc VPCRegion=us-east-1,VPCId=vpc-0684465d2e01f1b6b 
+
+
+aws route53 associate-vpc-with-hosted-zone --hosted-zone-id Z031938216A6GKQNJFWGX --vpc VPCRegion=us-east-1,VPCId=vpc-0684465d2e01f1b6b 
